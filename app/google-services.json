@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "244325039691",
+    "firebase_url": "https://secquraiseproject-default-rtdb.firebaseio.com",
+    "project_id": "secquraiseproject",
+    "storage_bucket": "secquraiseproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244325039691:android:a1733654b860863638d7ce",
+        "android_client_info": {
+          "package_name": "com.example.secquraiseproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "244325039691-lilh7vpe0km7b3708hlabbs40mfsn0rp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBAT4YTDl6QiSQ8E4hDPnmgAZTkW3dDfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "244325039691-lilh7vpe0km7b3708hlabbs40mfsn0rp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

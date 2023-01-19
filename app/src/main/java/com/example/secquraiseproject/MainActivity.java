@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference("data");
     private StorageReference reference = FirebaseStorage.getInstance().getReference();
     private Uri imageUri;
+    //final String[] loca = new String[1];
+
+    String loca;
 
 
     @SuppressLint({"MissingPermission", "MissingInflatedId"})
@@ -124,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         db_bc=BatteryChargin();
         db_timeStamp=TimeStamp();
         getLastLocation();
+
         requestAppPermission("0");
         //Toast.makeText(this, "abc" + db_loc, Toast.LENGTH_SHORT).show();
 
@@ -136,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
         String de = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
         Log.d("TaskuniqueID", de);
+        imei.setText(de);
         return de;
     }
 
@@ -147,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         boolean ins = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
         String a = valueOf(ins).toUpperCase(Locale.ROOT);
         Log.d("TaskInternet Connectivity", valueOf(ins));
-
+        ics.setText(a);
         return a;
     }
 
@@ -160,15 +165,9 @@ public class MainActivity extends AppCompatActivity {
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         float batteryPct = level / (float)scale;
         float p = batteryPct * 100;
-        String bStatus = "null";
 
-        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-        if(status == BatteryManager.BATTERY_STATUS_CHARGING){
-            bStatus="Charging";
-        }
-        else{
-            bStatus = "Not Charging";
-        }
+
+        bc.setText(String.valueOf(level));
 
         return String.valueOf(level);
 
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
             bStatus = "Not Charging";
         }
 
-
+        bcs.setText(bStatus);
         return bStatus;
 
     }
@@ -205,13 +204,14 @@ public class MainActivity extends AppCompatActivity {
         String ts = tsLong.toString();
 
         Log.d("TaskTimeStamp",ts);
+        timestamp.setText(ts);
         return ts;
     }
 
 
 //    Function to get Location;
     private String getLastLocation(){
-        final String[] loca = new String[1];
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
 
         if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
@@ -225,8 +225,10 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
 
-                            loca[0] = addresses.get(0).getLocality()+", "+addresses.get(0).getCountryName();
-                            db_loc = loca[0];
+                            loca = addresses.get(0).getLocality()+", "+addresses.get(0).getCountryName();
+                            //Log.d("location",loca);
+                            loc.setText(loca);
+                            //db_loc = loca[0];
                         } catch (IOException e) {
                             e.printStackTrace();
                             Log.d("er","error");
@@ -243,8 +245,11 @@ public class MainActivity extends AppCompatActivity {
         else{
             askPermission();
         }
+        String ac = loca;
+        System.out.println(ac);
 
-        return loca[0];
+
+        return loca;
     }
 //  Asking Permission for Location
     private void askPermission() {
@@ -368,42 +373,47 @@ public class MainActivity extends AppCompatActivity {
 
         startActivityForResult(intent, 101);
     }
-
+    //Second Thread
     private void UploadImage(Uri ms){
         Log.d("abc", String.valueOf(ms));
         if(ms!=null){
-            StorageReference ref = reference.child("images/").child(System.currentTimeMillis()+".jpg");
-            Log.d("def", String.valueOf(ref));
-            ref.putFile(ms).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+            new Thread(new Runnable()
+            {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    imei.setText(db_imei);
-                    ics.setText(db_ics);
-                    bc.setText(db_bc);
-                    bcs.setText(db_bcs);
-                    loc.setText(db_loc);
-                    timestamp.setText(db_timeStamp);
-                    ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                public void run()
+                {
+                    StorageReference ref = reference.child("images/").child(System.currentTimeMillis()+".jpg");
+                    Log.d("def", String.valueOf(ref));
+                    ref.putFile(ms).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onSuccess(Uri uri) {
-                            db_img = uri.toString();
-                            root.child(db_imei).child("IMEI").setValue(db_imei);
-                            root.child(db_imei).child("Internet Connection Status").setValue(db_ics);
-                            root.child(db_imei).child("Battery Charging Status").setValue(db_bcs);
-                            root.child(db_imei).child("Battery Charging").setValue(db_bc);
-                            root.child(db_imei).child("Timestamp").setValue(db_timeStamp);
-                            root.child(db_imei).child("ImageUrl").setValue(db_img);
-                            Toast.makeText(MainActivity.this, "Data uploaded", Toast.LENGTH_SHORT).show();
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                            ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    db_img = uri.toString();
+                                    root.child(db_imei).child("IMEI").setValue(db_imei);
+                                    root.child(db_imei).child("Internet Connection Status").setValue(db_ics);
+                                    root.child(db_imei).child("Battery Charging Status").setValue(db_bcs);
+                                    root.child(db_imei).child("Battery Charging").setValue(db_bc);
+                                    root.child(db_imei).child("Timestamp").setValue(db_timeStamp);
+                                    root.child(db_imei).child("ImageUrl").setValue(db_img);
+                                    Toast.makeText(MainActivity.this, "Data uploaded", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(MainActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+                            Log.d("error", String.valueOf(e));
                         }
                     });
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(MainActivity.this, "Failed", Toast.LENGTH_SHORT).show();
-                    Log.d("error", String.valueOf(e));
-                }
-            });
+            }).start();
+
+
         }
         else{
             Toast.makeText(this, "Image Uri is null", Toast.LENGTH_SHORT).show();
